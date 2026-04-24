@@ -1,5 +1,6 @@
 package com.insa.tp_archi_step_2.service;
 
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -52,5 +53,11 @@ public class Service3ServiceImpl implements Service3Service {
         return sampleRepository.findById(UUID.fromString(id))
                 .map(sampleDtoMapper::sampleToSampleDto)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sample result not found."));
+    }
+
+    public List<SampleResultDto> getAllSampleResults() {
+        return sampleRepository.findAll().stream()
+                .map(sampleDtoMapper::sampleToSampleDto)
+                .toList();
     }
 }

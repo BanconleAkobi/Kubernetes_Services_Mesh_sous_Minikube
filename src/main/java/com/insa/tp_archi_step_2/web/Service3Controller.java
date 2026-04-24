@@ -9,14 +9,16 @@ import com.insa.tp_archi_step_2.service.dto.SampleResultDto;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
-@RequestMapping("/service3")
+@RequestMapping("/api/validate")
 @RequiredArgsConstructor
 public class Service3Controller {
 
@@ -29,9 +31,14 @@ public class Service3Controller {
         return "Sample result validated successfully.";
     }
 
-    @GetMapping
-    public SampleResultDto getSampleResult(@RequestParam String id) {
+    @GetMapping("/validated/{id}")
+    public SampleResultDto getSampleResult(@PathVariable String id) {
         return service3Service.getSampleResultById(id);
     }
-    
+
+    @GetMapping("/validated/all")
+    public List<SampleResultDto> getAllSampleResults() {
+        return service3Service.getAllSampleResults();
+    }
+
 }
