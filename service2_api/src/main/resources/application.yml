@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: tpArchiStep2_Service2

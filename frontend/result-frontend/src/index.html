@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaboTrack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="mock-banner" class="hidden">
+        Simulation active — données fictives (backend non connecté)
+    </div>
+
+    <header>
+        <div class="header-inner">
+            <div class="logo">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                    <rect width="28" height="28" rx="7" fill="#2a7fba"/>
+                    <path d="M14 6v4M14 18v4M6 14h4M18 14h4" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+                    <circle cx="14" cy="14" r="3.5" fill="white"/>
+                </svg>
+                <span>LaboTrack</span>
+            </div>
+            <p class="header-sub">Système de suivi des analyses de laboratoire</p>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- Stepper -->
+        <div class="stepper" id="stepper">
+            <div class="step active" id="step-1">
+                <div class="step-dot">1</div>
+                <span>Enregistrement</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step" id="step-2">
+                <div class="step-dot">2</div>
+                <span>Analyse</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step" id="step-3">
+                <div class="step-dot">3</div>
+                <span>Résultat</span>
+            </div>
+        </div>
+
+        <!-- Étape 1 : enregistrement -->
+        <section id="section-registration" class="card">
+            <h2>Nouvel échantillon</h2>
+            <form id="form-sample">
+                <div class="field">
+                    <label for="patient">Patient</label>
+                    <input type="text" id="patient" name="patient"
+                           placeholder="ex. Martin, Jean" autocomplete="off" required>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label for="testType">Type d'examen</label>
+                        <select id="testType" name="testType" required>
+                            <option value="">— Sélectionner —</option>
+                            <option value="GLYCEMIE">Glycémie</option>
+                            <option value="NFS">Numération Formule Sanguine</option>
+                            <option value="BILAN_HEPATIQUE">Bilan hépatique</option>
+                            <option value="BILAN_RENAL">Bilan rénal</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="sampleType">Type de prélèvement</label>
+                        <select id="sampleType" name="sampleType" required>
+                            <option value="">— Sélectionner —</option>
+                            <option value="SANG">Sang</option>
+                            <option value="URINE">Urine</option>
+                            <option value="PLASMA">Plasma</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button type="submit" class="btn btn-primary">
+                        Enregistrer l'échantillon
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Étape 2 : lancement de l'analyse -->
+        <section id="section-registered" class="card hidden">
+            <h2>Échantillon enregistré</h2>
+            <div class="sample-badge">
+                <div class="badge-row">
+                    <span class="badge-label">ID</span>
+                    <code id="info-id">—</code>
+                </div>
+                <div class="badge-row">
+                    <span class="badge-label">Patient</span>
+                    <span id="info-patient">—</span>
+                </div>
+                <div class="badge-row">
+                    <span class="badge-label">Examen</span>
+                    <span id="info-test">—</span>
+                </div>
+                <div class="badge-row">
+                    <span class="badge-label">Prélèvement</span>
+                    <span id="info-sample">—</span>
+                </div>
+            </div>
+            <div class="form-footer">
+                <button id="btn-analyze" class="btn btn-primary">
+                    <span class="btn-icon" aria-hidden="true">⚗</span>
+                    Lancer l'analyse
+                </button>
+            </div>
+        </section>
+
+        <!-- Étape 3 : résultat -->
+        <section id="section-result" class="card hidden">
+            <h2>Résultat de l'analyse</h2>
+            <div class="result-grid">
+                <div class="result-main">
+                    <span class="result-number" id="result-value">—</span>
+                    <span class="result-unit" id="result-unit">—</span>
+                </div>
+                <div class="result-badge" id="result-interpretation-badge">
+                    <span id="result-interpretation">—</span>
+                </div>
+            </div>
+            <div class="result-meta">
+                <div class="badge-row">
+                    <span class="badge-label">Patient</span>
+                    <span id="result-patient">—</span>
+                </div>
+                <div class="badge-row">
+                    <span class="badge-label">Examen</span>
+                    <span id="result-test">—</span>
+                </div>
+                <div class="badge-row">
+                    <span class="badge-label">Validation biologique</span>
+                    <code id="result-signature">—</code>
+                </div>
+            </div>
+            <div class="form-footer">
+                <button id="btn-reset" class="btn btn-secondary">
+                    Nouvel échantillon
+                </button>
+            </div>
+        </section>
+
+        <!-- Barre de statut -->
+        <div id="status-bar" class="hidden" role="status" aria-live="polite">
+            <div class="status-spinner" id="status-spinner"></div>
+            <span id="status-message"></span>
+        </div>
+
+    </main>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+
+</body>
+</html>
