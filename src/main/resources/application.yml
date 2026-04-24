@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: tpArchiStep2
+
+  security:
+    oauth2:
+      authorizationserver:
+        issuer: http://auth-server:9000
+        client:
+          samples-client:
+            registration:
+              client-id: samples-client
+              client-secret: "{noop}secret"
+              client-name: Samples Client
+              client-authentication-methods:
+                - client_secret_basic
+              authorization-grant-types:
+                - authorization_code
+                - refresh_token
+              redirect-uris:
+                - http://127.0.0.1:8080/login/oauth2/code/samples-client-oidc
+                - http://127.0.0.1:8080/authorized
+              scopes:
+                - openid
+                - articles.read
+
+server:
+  port: 9000
