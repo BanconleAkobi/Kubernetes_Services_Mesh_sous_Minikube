@@ -3,6 +3,7 @@ package com.insa.tp_archi_step_2.web;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.insa.tp_archi_step_2.service.Service1Service;
+import com.insa.tp_archi_step_2.service.dto.RegisteredSampleDto;
 import com.insa.tp_archi_step_2.service.dto.SampleDto;
 
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,7 @@ public class Service1Controller {
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public String registerSample(@RequestBody SampleDto sample) {
-        service1Service.registerSample(sample);
-        return "Sample registered successfully and sent for analysis.";
+    public RegisteredSampleDto registerSample(@RequestBody SampleDto sample) {
+        return service1Service.registerSample(sample);
     }
 }

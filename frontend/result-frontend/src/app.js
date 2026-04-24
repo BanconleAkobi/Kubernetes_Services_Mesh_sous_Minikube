@@ -3,12 +3,12 @@
 const config = window.LABOTRACK_CONFIG ?? { mockMode: true };
 
 
-// ─── Client API réel ──────────────────────────────────────────────────────────
-// nginx proxy /api/samples  → sample-api:9000
-// nginx proxy /api/analyze  → analysis-api:9001
+// Appels vers nginx, qui proxy vers service1 et service3.
+// POST /api/register bloque jusqu'à ce que toute la chaîne soit terminée
+// (service1 → service2 → service3), donc quand ça répond l'ID est utilisable.
 const api = {
     async registerSample(data) {
-        const res = await fetch("/api/samples", {
+        const res = await fetch("/api/register", {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify(data),
@@ -17,43 +17,37 @@ const api = {
         return res.json();
     },
 
-    async analyze(id) {
-        const res = await fetch(`/api/analyze/${id}`, { method: "POST" });
-        if (!res.ok) throw new Error(`Analyse échouée (HTTP ${res.status})`);
+    async getResult(id) {
+        const res = await fetch(`/api/results/${id}`);
+        if (!res.ok) throw new Error(`Résultat introuvable (HTTP ${res.status})`);
         return res.json();
     },
 };
 
 
-// ─── Client mock ──────────────────────────────────────────────────────────────
 const MOCK_RESULTS = {
-    GLYCEMIE:        { value: "0.86", unit: "g/L",  interpretation: "NORMAL"   },
-    NFS:             { value: "4.5",  unit: "T/L",  interpretation: "NORMAL"   },
-    BILAN_HEPATIQUE: { value: "42",   unit: "UI/L", interpretation: "ELEVE"    },
-    BILAN_RENAL:     { value: "7.2",  unit: "mg/L", interpretation: "CRITIQUE" },
+    GLYCEMIE:        { value: "0.86", unit: "g/L",  interpretation: "Normal" },
+    NFS:             { value: "4.5",  unit: "T/L",  interpretation: "Normal" },
+    BILAN_HEPATIQUE: { value: "42",   unit: "UI/L", interpretation: "High"   },
+    BILAN_RENAL:     { value: "7.2",  unit: "mg/L", interpretation: "Low"    },
 };
 
 const mockStore = {};
 
 const mock = {
     async registerSample(data) {
-        await pause(400);
+        await pause(1200);
         const id = crypto.randomUUID();
-        mockStore[id] = { id, ...data };
-        return { id, ...data };
+        const resultTemplate = MOCK_RESULTS[data.testType]
+            ?? { value: "—", unit: "—", interpretation: "Inconnu" };
+        mockStore[id] = { id, ...data, ...resultTemplate, signature: randomToken(10) };
+        return { id, patient: data.patient, testType: data.testType, sampleType: data.sampleType };
     },
 
-    async analyze(id) {
-        await pause(700); // simule la latence mentionnée dans le sujet
-        const sample = mockStore[id];
-        if (!sample) throw new Error(`Échantillon introuvable : ${id}`);
-
-        const result = {
-            ...sample,
-            ...(MOCK_RESULTS[sample.testType] ?? { value: "—", unit: "—", interpretation: "INCONNU" }),
-            signature: `BIO-${Date.now()}`,
-        };
-        mockStore[id] = result;
+    async getResult(id) {
+        await pause(200);
+        const result = mockStore[id];
+        if (!result) throw new Error(`Résultat introuvable pour l'ID ${id}`);
         return result;
     },
 };
@@ -61,11 +55,18 @@ const mock = {
 const client = config.mockMode ? mock : api;
 
 
-// ─── Utilitaires ─────────────────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
 
 function pause(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function randomToken(length) {
+    return Array.from(crypto.getRandomValues(new Uint8Array(length)))
+        .map((b) => b.toString(36))
+        .join("")
+        .slice(0, length)
+        .toUpperCase();
 }
 
 function setStatus(message, type = "info") {
@@ -92,19 +93,15 @@ function advanceStepper(activeStep) {
         if (n < activeStep)  el.classList.add("done");
         if (n === activeStep) el.classList.add("active");
     });
-
-    // Colore les lignes entre steps
     document.querySelectorAll(".step-line").forEach((line, i) => {
         line.classList.toggle("done", i + 1 < activeStep);
     });
 }
 
 
-// ─── État ─────────────────────────────────────────────────────────────────────
 let currentSampleId = null;
 
 
-// ─── Handlers ─────────────────────────────────────────────────────────────────
 $("form-sample").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -114,7 +111,7 @@ $("form-sample").addEventListener("submit", async (e) => {
         sampleType: $("sampleType").value,
     };
 
-    setStatus("Enregistrement de l'échantillon…");
+    setStatus("Enregistrement et analyse en cours, veuillez patienter…");
 
     try {
         const sample = await client.registerSample(data);
@@ -135,22 +132,22 @@ $("form-sample").addEventListener("submit", async (e) => {
 
 $("btn-analyze").addEventListener("click", async () => {
     $("btn-analyze").disabled = true;
-    setStatus("Analyse en cours, veuillez patienter…");
+    setStatus("Récupération du résultat…");
 
     try {
-        const result = await client.analyze(currentSampleId);
+        const result = await client.getResult(currentSampleId);
 
-        $("result-value").textContent  = result.value ?? "—";
-        $("result-unit").textContent   = result.unit  ?? "—";
-        $("result-patient").textContent = result.patient ?? "—";
-        $("result-test").textContent   = result.testType ?? "—";
-        $("result-signature").textContent = result.signature ?? "Non validé";
+        $("result-value").textContent     = result.value          ?? "—";
+        $("result-unit").textContent      = result.unit           ?? "—";
+        $("result-patient").textContent   = result.patient        ?? "—";
+        $("result-test").textContent      = result.testType       ?? "—";
+        $("result-signature").textContent = result.signature      ?? "Non validé";
 
         const interp  = result.interpretation ?? "INCONNU";
         const interpEl = $("result-interpretation");
         const badgeEl  = $("result-interpretation-badge");
-        interpEl.textContent        = interp;
-        badgeEl.dataset.level       = interp.toLowerCase();
+        interpEl.textContent  = interp;
+        badgeEl.dataset.level = interp.toLowerCase();
 
         clearStatus();
         advanceStepper(3);
@@ -171,7 +168,6 @@ $("btn-reset").addEventListener("click", () => {
 });
 
 
-// ─── Bandeau mock ─────────────────────────────────────────────────────────────
 if (config.mockMode) {
     $("mock-banner").classList.remove("hidden");
 }

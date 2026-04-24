@@ -1,0 +1,36 @@
+services:
+
+  service1:
+    build: ./service1_api
+    ports:
+      - "9000:9000"
+    depends_on:
+      - service2
+
+  service2:
+    build: ./service2_api
+    ports:
+      - "9001:9001"
+    depends_on:
+      - service3
+
+  service3:
+    build: ./service3_api
+    ports:
+      - "9002:9002"
+    volumes:
+      - service3-data:/data
+
+  frontend:
+    build: ./frontend/result-frontend
+    ports:
+      - "8080:80"
+    environment:
+      SERVICE1_URL: http://service1:9000
+      SERVICE3_URL: http://service3:9002
+    depends_on:
+      - service1
+      - service3
+
+volumes:
+  service3-data:

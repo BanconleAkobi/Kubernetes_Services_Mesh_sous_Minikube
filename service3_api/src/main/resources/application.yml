@@ -1,6 +1,6 @@
 spring:
   application:
-    name: tpArchiStep2
+    name: tpArchiStep2_Service3
   datasource:
     url: jdbc:h2:file:/data/tpArchiStep2
     driverClassName: org.h2.Driver
@@ -11,3 +11,6 @@ spring:
   h2:
     console:
       enabled: true
+
+server:
+  port: 9002

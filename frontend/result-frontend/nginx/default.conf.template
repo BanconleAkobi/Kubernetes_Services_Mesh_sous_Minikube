@@ -10,17 +10,18 @@ server {
         add_header Cache-Control "no-store, no-cache";
     }
 
-    # Proxy vers sample-api (port 9000 dans le cluster Kubernetes).
-    location /api/samples {
-        proxy_pass         ${SAMPLE_API_URL}/samples;
+    # Proxy vers service1 — enregistrement d'un échantillon (port 9000).
+    location /api/register {
+        proxy_pass         ${SERVICE1_URL}/api/register;
         proxy_set_header   Host            $host;
         proxy_set_header   X-Real-IP       $remote_addr;
         proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
-    # Proxy vers analysis-api (port 9001 dans le cluster Kubernetes).
-    location /api/analyze {
-        proxy_pass         ${ANALYSIS_API_URL}/analyze;
+    # Proxy vers service3 — lecture du résultat validé (port 9002).
+    # /api/results/{id} → service3:/api/validate/validated/{id}
+    location /api/results {
+        proxy_pass         ${SERVICE3_URL}/api/validate/validated;
         proxy_set_header   Host            $host;
         proxy_set_header   X-Real-IP       $remote_addr;
         proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;

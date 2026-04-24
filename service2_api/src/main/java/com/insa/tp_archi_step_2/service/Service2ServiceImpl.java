@@ -40,7 +40,7 @@ public class Service2ServiceImpl implements Service2Service {
                 .patient(sample.getPatient())
                 .testType(sample.getTestType())
                 .sampleType(sample.getSampleType())
-                .value(String.format("%.2f", Random.from(null).nextDouble(0, 100)))
+                .value(String.format("%.2f", random.nextDouble(0, 100)))
                 .unit(getRandomUnit())
                 .interpretation(getRandomInterpretation())
                 .build();
@@ -48,12 +48,12 @@ public class Service2ServiceImpl implements Service2Service {
 
     private String getRandomInterpretation() {
         String[] interpretations = {"Normal", "High", "Low", "Positive", "Negative"};
-        return interpretations[Random.from(null).nextInt(interpretations.length)];
+        return interpretations[random.nextInt(interpretations.length)];
     }
 
     private String getRandomUnit() {
         String[] units = {"mg/dL", "mmol/L", "g/L"};
-        return units[Random.from(null).nextInt(units.length)];
+        return units[random.nextInt(units.length)];
     }
 
     private void sendResultForValidation(SampleResultDto result) {

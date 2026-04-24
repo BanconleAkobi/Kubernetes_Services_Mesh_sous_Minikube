@@ -1,3 +1,6 @@
 spring:
   application:
     name: tpArchiStep2_Service2
+
+server:
+  port: 9001

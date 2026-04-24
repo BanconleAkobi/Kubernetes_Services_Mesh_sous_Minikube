@@ -23,13 +23,14 @@ public class Service1ServiceImpl implements Service1Service {
     private final Service2HttpClient service2HttpClient;
 
     @Override
-    public void registerSample(SampleDto sample) {
+    public RegisteredSampleDto registerSample(SampleDto sample) {
         RegisteredSampleDto registeredSample = setSampleId(sample);
         if (!checkBasicData(registeredSample)) {
             log.error("Basic data check failed for sample: {}", registeredSample.getId());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provided data is incorrect (not true, this is a check with a random chance of failure");
         }
         sendToAnalysis(registeredSample);
+        return registeredSample;
     }
 
     private RegisteredSampleDto setSampleId(SampleDto sample) {
