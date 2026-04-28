@@ -13,6 +13,7 @@ const api = {
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify(data),
         });
+        console.log(res);
         if (!res.ok) throw new Error(`Enregistrement échoué (HTTP ${res.status})`);
         return res.json();
     },
@@ -117,6 +118,7 @@ $("form-sample").addEventListener("submit", async (e) => {
         const sample = await client.registerSample(data);
         currentSampleId = sample.id;
 
+        console.log(sample);
         $("info-id").textContent      = sample.id;
         $("info-patient").textContent = sample.patient;
         $("info-test").textContent    = sample.testType;

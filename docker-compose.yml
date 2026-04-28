@@ -22,7 +22,7 @@ services:
       - service3-data:/data
 
   frontend:
-    build: ./frontend/result-frontend
+    build: ./frontend
     ports:
       - "8080:80"
     environment:

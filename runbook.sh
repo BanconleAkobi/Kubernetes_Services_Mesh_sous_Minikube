@@ -19,7 +19,7 @@ build_images() {
     docker build -t $REGISTRY/service3:$TAG ./service3_api
 
     echo ">>> Build frontend..."
-    docker build -t $REGISTRY/frontend:$TAG ./frontend/result-frontend
+    docker build -t $REGISTRY/frontend:$TAG ./frontend
 
     echo ">>> Images construites :"
     docker images | grep $REGISTRY
