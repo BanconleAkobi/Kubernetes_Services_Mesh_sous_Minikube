@@ -16,6 +16,7 @@ spec:
       containers:
         - name: frontend
           image: labotrack/frontend:1.0
+          imagePullPolicy: Never
           ports:
             - containerPort: 80
           env:

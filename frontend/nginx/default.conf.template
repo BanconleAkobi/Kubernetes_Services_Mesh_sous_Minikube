@@ -18,10 +18,15 @@ server {
         proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
-    # Proxy vers service3 — lecture du résultat validé (port 9002).
-    # /api/results/{id} → service3:/api/validate/validated/{id}
     location /api/results {
         proxy_pass         ${SERVICE3_URL}/api/validate/validated;
+        proxy_set_header   Host            $host;
+        proxy_set_header   X-Real-IP       $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /api/all {
+        proxy_pass         ${SERVICE3_URL}/api/validate/validated/all;
         proxy_set_header   Host            $host;
         proxy_set_header   X-Real-IP       $remote_addr;
         proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;

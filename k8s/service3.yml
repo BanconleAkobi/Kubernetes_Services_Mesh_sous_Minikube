@@ -28,6 +28,7 @@ spec:
       containers:
         - name: service3
           image: labotrack/service3:1.0
+          imagePullPolicy: Never
           ports:
             - containerPort: 9002
           volumeMounts:

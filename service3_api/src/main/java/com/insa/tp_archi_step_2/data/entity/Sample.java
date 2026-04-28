@@ -2,6 +2,7 @@ package com.insa.tp_archi_step_2.data.entity;
 
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -21,6 +22,7 @@ public class Sample {
 
     private String sampleType;
 
+    @Column(name = "sample_value")
     private String value;
 
     private String unit;

@@ -16,6 +16,7 @@ spec:
       containers:
         - name: service1
           image: labotrack/service1:1.0
+          imagePullPolicy: Never
           ports:
             - containerPort: 9000
           readinessProbe:

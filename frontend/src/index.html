@@ -11,10 +11,6 @@
 </head>
 <body>
 
-    <div id="mock-banner" class="hidden">
-        Simulation active - données fictives (backend non connecté)
-    </div>
-
     <header>
         <div class="header-inner">
             <div class="logo">
@@ -26,6 +22,7 @@
                 <span>LaboTrack</span>
             </div>
             <p class="header-sub">Système de suivi des analyses de laboratoire</p>
+            <button id="btn-history" class="btn-header">Historique</button>
         </div>
     </header>
 
@@ -149,6 +146,27 @@
             </div>
         </section>
 
+        <!-- Historique -->
+        <section id="section-history" class="card hidden">
+            <h2>Historique des analyses</h2>
+            <div id="history-empty" class="history-empty hidden">Aucun résultat enregistré.</div>
+            <div class="history-table-wrap">
+                <table id="history-table" class="history-table hidden">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Examen</th>
+                            <th>Prélèvement</th>
+                            <th>Valeur</th>
+                            <th>Interprétation</th>
+                            <th>Signature</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body"></tbody>
+                </table>
+            </div>
+        </section>
+
         <!-- Barre de statut -->
         <div id="status-bar" class="hidden" role="status" aria-live="polite">
             <div class="status-spinner" id="status-spinner"></div>
@@ -157,7 +175,6 @@
 
     </main>
 
-    <script src="config.js"></script>
     <script src="app.js"></script>
 
 </body>

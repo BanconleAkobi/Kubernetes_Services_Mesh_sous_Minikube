@@ -14,6 +14,8 @@ public class SampleResultDto extends RegisteredSampleDto {
     private String value;
 
     private String unit;
-    
+
     private String interpretation;
+
+    private String signature;
 }

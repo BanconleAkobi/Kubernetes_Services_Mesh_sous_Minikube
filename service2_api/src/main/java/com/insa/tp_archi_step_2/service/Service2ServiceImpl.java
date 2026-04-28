@@ -21,7 +21,7 @@ public class Service2ServiceImpl implements Service2Service {
     private final Service3HttpClient service3HttpClient;
     
     public void processSample(RegisteredSampleDto sample) {
-        simulateProcessingTime(sample, 5000);
+        simulateProcessingTime(sample, 2000);
         SampleResultDto result = generateResult(sample);
         sendResultForValidation(result);
     }

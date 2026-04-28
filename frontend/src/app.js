@@ -1,19 +1,18 @@
 "use strict";
 
-const config = window.LABOTRACK_CONFIG ?? { mockMode: true };
-
-
-// Appels vers nginx, qui proxy vers service1 et service3.
-// POST /api/register bloque jusqu'à ce que toute la chaîne soit terminée
-// (service1 → service2 → service3), donc quand ça répond l'ID est utilisable.
 const api = {
+    async getAllResults() {
+        const res = await fetch("/api/all");
+        if (!res.ok) throw new Error(`Impossible de charger l'historique (HTTP ${res.status})`);
+        return res.json();
+    },
+
     async registerSample(data) {
         const res = await fetch("/api/register", {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify(data),
         });
-        console.log(res);
         if (!res.ok) throw new Error(`Enregistrement échoué (HTTP ${res.status})`);
         return res.json();
     },
@@ -26,49 +25,7 @@ const api = {
 };
 
 
-const MOCK_RESULTS = {
-    GLYCEMIE:        { value: "0.86", unit: "g/L",  interpretation: "Normal" },
-    NFS:             { value: "4.5",  unit: "T/L",  interpretation: "Normal" },
-    BILAN_HEPATIQUE: { value: "42",   unit: "UI/L", interpretation: "High"   },
-    BILAN_RENAL:     { value: "7.2",  unit: "mg/L", interpretation: "Low"    },
-};
-
-const mockStore = {};
-
-const mock = {
-    async registerSample(data) {
-        await pause(1200);
-        const id = crypto.randomUUID();
-        const resultTemplate = MOCK_RESULTS[data.testType]
-            ?? { value: "—", unit: "—", interpretation: "Inconnu" };
-        mockStore[id] = { id, ...data, ...resultTemplate, signature: randomToken(10) };
-        return { id, patient: data.patient, testType: data.testType, sampleType: data.sampleType };
-    },
-
-    async getResult(id) {
-        await pause(200);
-        const result = mockStore[id];
-        if (!result) throw new Error(`Résultat introuvable pour l'ID ${id}`);
-        return result;
-    },
-};
-
-const client = config.mockMode ? mock : api;
-
-
 const $ = (id) => document.getElementById(id);
-
-function pause(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function randomToken(length) {
-    return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-        .map((b) => b.toString(36))
-        .join("")
-        .slice(0, length)
-        .toUpperCase();
-}
 
 function setStatus(message, type = "info") {
     const bar = $("status-bar");
@@ -115,10 +72,9 @@ $("form-sample").addEventListener("submit", async (e) => {
     setStatus("Enregistrement et analyse en cours, veuillez patienter…");
 
     try {
-        const sample = await client.registerSample(data);
+        const sample = await api.registerSample(data);
         currentSampleId = sample.id;
 
-        console.log(sample);
         $("info-id").textContent      = sample.id;
         $("info-patient").textContent = sample.patient;
         $("info-test").textContent    = sample.testType;
@@ -137,7 +93,7 @@ $("btn-analyze").addEventListener("click", async () => {
     setStatus("Récupération du résultat…");
 
     try {
-        const result = await client.getResult(currentSampleId);
+        const result = await api.getResult(currentSampleId);
 
         $("result-value").textContent     = result.value          ?? "—";
         $("result-unit").textContent      = result.unit           ?? "—";
@@ -145,7 +101,7 @@ $("btn-analyze").addEventListener("click", async () => {
         $("result-test").textContent      = result.testType       ?? "—";
         $("result-signature").textContent = result.signature      ?? "Non validé";
 
-        const interp  = result.interpretation ?? "INCONNU";
+        const interp   = result.interpretation ?? "INCONNU";
         const interpEl = $("result-interpretation");
         const badgeEl  = $("result-interpretation-badge");
         interpEl.textContent  = interp;
@@ -160,6 +116,51 @@ $("btn-analyze").addEventListener("click", async () => {
     }
 });
 
+$("btn-history").addEventListener("click", async () => {
+    const section = $("section-history");
+    const isVisible = !section.classList.contains("hidden");
+
+    if (isVisible) {
+        section.classList.add("hidden");
+        $("btn-history").textContent = "Historique";
+        return;
+    }
+
+    $("btn-history").textContent = "…";
+    try {
+        const results = await api.getAllResults();
+        const body = $("history-body");
+        body.innerHTML = "";
+
+        if (results.length === 0) {
+            $("history-empty").classList.remove("hidden");
+            $("history-table").classList.add("hidden");
+        } else {
+            $("history-empty").classList.add("hidden");
+            $("history-table").classList.remove("hidden");
+            results.forEach((r) => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${r.patient ?? "—"}</td>
+                    <td>${r.testType ?? "—"}</td>
+                    <td>${r.sampleType ?? "—"}</td>
+                    <td>${r.value ?? "—"} ${r.unit ?? ""}</td>
+                    <td><span class="result-badge" data-level="${(r.interpretation ?? "").toLowerCase()}">${r.interpretation ?? "—"}</span></td>
+                    <td><code>${r.signature ?? "—"}</code></td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        section.classList.remove("hidden");
+        section.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch (err) {
+        setStatus(err.message, "error");
+    } finally {
+        $("btn-history").textContent = "Historique";
+    }
+});
+
 $("btn-reset").addEventListener("click", () => {
     currentSampleId = null;
     $("form-sample").reset();
@@ -168,8 +169,3 @@ $("btn-reset").addEventListener("click", () => {
     advanceStepper(1);
     showSection("section-registration");
 });
-
-
-if (config.mockMode) {
-    $("mock-banner").classList.remove("hidden");
-}
