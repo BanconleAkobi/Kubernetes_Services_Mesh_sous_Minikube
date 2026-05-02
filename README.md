@@ -1,8 +1,8 @@
-# LaboTrack — Étape 2
+# LaboTrack - Étape 2
 
 ## Schéma d'architecture
 
-*(voir schéma joint — généré avec napkin.ai)*
+*(voir schéma joint - généré avec napkin.ai)*
 
 Le flux complet : **Frontend** (nginx) → **service1** (enregistrement) → **service2** (analyse 2s) → **service3** (validation + persistance H2). Tous les appels inter-services transitent par le mesh **Linkerd** (mTLS, observabilité, timeout).
 
